@@ -25,6 +25,10 @@ export interface IResourceEncoding {
 	hasBOM: boolean;
 }
 
+export interface IProviderActivationHandler {
+	(scheme: string): Promise<void>;
+}
+
 export interface IFileService {
 	_serviceBrand: any;
 
@@ -48,7 +52,7 @@ export interface IFileService {
 	/**
 	 * Sets the handler to trigger activation of providers.
 	 */
-	setActivationProviderHandler(handler: () => Promise<void>): void;
+	setActivationProviderHandler(handler: IProviderActivationHandler): void;
 
 	/**
 	 * Checks if this file service can handle the given resource.

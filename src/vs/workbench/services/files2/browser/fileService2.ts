@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { Disposable, IDisposable, toDisposable, combinedDisposable } from 'vs/base/common/lifecycle';
-import { IFileService, IResolveFileOptions, IResourceEncodings, FileChangesEvent, FileOperationEvent, IFileSystemProviderRegistrationEvent, IFileSystemProvider, IFileStat, IResolveFileResult, IResolveContentOptions, IContent, IStreamContent, ITextSnapshot, IUpdateContentOptions, ICreateFileOptions } from 'vs/platform/files/common/files';
+import { IFileService, IResolveFileOptions, IResourceEncodings, FileChangesEvent, FileOperationEvent, IFileSystemProviderRegistrationEvent, IFileSystemProvider, IFileStat, IResolveFileResult, IResolveContentOptions, IContent, IStreamContent, ITextSnapshot, IUpdateContentOptions, ICreateFileOptions, IProviderActivationHandler } from 'vs/platform/files/common/files';
 import { URI } from 'vs/base/common/uri';
 import { Event, Emitter } from 'vs/base/common/event';
 import { ServiceIdentifier } from 'vs/platform/instantiation/common/instantiation';
@@ -42,7 +42,7 @@ export class FileService2 extends Disposable implements IFileService {
 	get onDidChangeFileSystemProviderRegistrations(): Event<IFileSystemProviderRegistrationEvent> { return this._onDidChangeFileSystemProviderRegistrations.event; }
 
 	private readonly provider = new Map<string, IFileSystemProvider>();
-	private providerHandler: () => Promise<void>;
+	private providerHandler: IProviderActivationHandler = (handler) => { console.warn('No provider activation handler registered yet.'); return Promise.resolve(); };
 
 	registerProvider(scheme: string, provider: IFileSystemProvider): IDisposable {
 		if (this.provider.has(scheme)) {
@@ -75,13 +75,9 @@ export class FileService2 extends Disposable implements IFileService {
 		}
 
 		return this.providerHandler(scheme);
-
-		// return this._extensionService.activateByEvent('onFileSystem:' + scheme); TODO@ben handle this outside
-
-		return Promise.resolve();
 	}
 
-	setActivationProviderHandler(handler: () => Promise<void>): void {
+	setActivationProviderHandler(handler: IProviderActivationHandler): void {
 		this.providerHandler = handler;
 	}
 

@@ -5,7 +5,7 @@
 
 import { URI } from 'vs/base/common/uri';
 import { IBackupFileService } from 'vs/workbench/services/backup/common/backup';
-import { ITextSnapshot, IFileStat, IContent, IFileService, IResourceEncodings, IResolveFileOptions, IResolveFileResult, IResolveContentOptions, IStreamContent, IUpdateContentOptions, snapshotToString, ICreateFileOptions, IResourceEncoding } from 'vs/platform/files/common/files';
+import { ITextSnapshot, IFileStat, IContent, IFileService, IResourceEncodings, IResolveFileOptions, IResolveFileResult, IResolveContentOptions, IStreamContent, IUpdateContentOptions, snapshotToString, ICreateFileOptions, IResourceEncoding, IProviderActivationHandler } from 'vs/platform/files/common/files';
 import { ITextBufferFactory } from 'vs/editor/common/model';
 import { createTextBufferFactoryFromSnapshot } from 'vs/editor/common/model/textModel';
 import { keys, ResourceMap } from 'vs/base/common/map';
@@ -696,7 +696,7 @@ export class SimpleRemoteFileService implements IFileService {
 	readonly onAfterOperation = Event.None;
 	readonly onDidChangeFileSystemProviderRegistrations = Event.None;
 
-	setActivationProviderHandler(handler: () => Promise<void>): void { }
+	setActivationProviderHandler(handler: IProviderActivationHandler): void { }
 
 	resolveFile(resource: URI, options?: IResolveFileOptions): Promise<IFileStat> {
 		// @ts-ignore
