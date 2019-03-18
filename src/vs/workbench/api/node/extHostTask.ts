@@ -11,7 +11,6 @@ import { asPromise } from 'vs/base/common/async';
 import { Event, Emitter } from 'vs/base/common/event';
 import { win32 } from 'vs/base/node/processes';
 
-import { IExtensionDescription } from 'vs/workbench/services/extensions/common/extensions';
 
 import { MainContext, MainThreadTaskShape, ExtHostTaskShape, IMainContext } from 'vs/workbench/api/node/extHost.protocol';
 
@@ -32,6 +31,7 @@ import { ExtHostTerminalService, ExtHostTerminal } from 'vs/workbench/api/node/e
 import { IWorkspaceFolder } from 'vs/platform/workspace/common/workspace';
 import { CancellationToken, CancellationTokenSource } from 'vs/base/common/cancellation';
 import { IDisposable, dispose } from 'vs/base/common/lifecycle';
+import { IExtensionDescription } from 'vs/platform/extensions/common/extensions';
 
 namespace TaskDefinitionDTO {
 	export function from(value: vscode.TaskDefinition): TaskDefinitionDTO | undefined {
@@ -79,9 +79,13 @@ namespace ProcessExecutionOptionsDTO {
 }
 
 namespace ProcessExecutionDTO {
-	export function is(value: ShellExecutionDTO | ProcessExecutionDTO | CustomExecutionDTO): value is ProcessExecutionDTO {
-		const candidate = value as ProcessExecutionDTO;
-		return candidate && !!candidate.process;
+	export function is(value: ShellExecutionDTO | ProcessExecutionDTO | CustomExecutionDTO | undefined): value is ProcessExecutionDTO {
+		if (value) {
+			const candidate = value as ProcessExecutionDTO;
+			return candidate && !!candidate.process;
+		} else {
+			return false;
+		}
 	}
 	export function from(value: vscode.ProcessExecution): ProcessExecutionDTO | undefined {
 		if (value === undefined || value === null) {
@@ -120,9 +124,13 @@ namespace ShellExecutionOptionsDTO {
 }
 
 namespace ShellExecutionDTO {
-	export function is(value: ShellExecutionDTO | ProcessExecutionDTO | CustomExecutionDTO): value is ShellExecutionDTO {
-		const candidate = value as ShellExecutionDTO;
-		return candidate && (!!candidate.commandLine || !!candidate.command);
+	export function is(value: ShellExecutionDTO | ProcessExecutionDTO | CustomExecutionDTO | undefined): value is ShellExecutionDTO {
+		if (value) {
+			const candidate = value as ShellExecutionDTO;
+			return candidate && (!!candidate.commandLine || !!candidate.command);
+		} else {
+			return false;
+		}
 	}
 	export function from(value: vscode.ShellExecution): ShellExecutionDTO | undefined {
 		if (value === undefined || value === null) {
@@ -154,9 +162,13 @@ namespace ShellExecutionDTO {
 }
 
 namespace CustomExecutionDTO {
-	export function is(value: ShellExecutionDTO | ProcessExecutionDTO | CustomExecutionDTO): value is CustomExecutionDTO {
-		let candidate = value as CustomExecutionDTO;
-		return candidate && candidate.customExecution === 'customExecution';
+	export function is(value: ShellExecutionDTO | ProcessExecutionDTO | CustomExecutionDTO | undefined): value is CustomExecutionDTO {
+		if (value) {
+			let candidate = value as CustomExecutionDTO;
+			return candidate && candidate.customExecution === 'customExecution';
+		} else {
+			return false;
+		}
 	}
 
 	export function from(value: vscode.CustomExecution): CustomExecutionDTO {

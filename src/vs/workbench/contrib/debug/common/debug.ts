@@ -63,10 +63,8 @@ export const INTERNAL_CONSOLE_OPTIONS_SCHEMA = {
 // raw
 
 export interface IRawModelUpdate {
-	threadId: number;
 	sessionId: string;
-	thread?: DebugProtocol.Thread;
-	callStack?: DebugProtocol.StackFrame[];
+	threads: DebugProtocol.Thread[];
 	stoppedDetails?: IRawStoppedDetails;
 }
 
@@ -542,7 +540,7 @@ export interface IDebuggerContribution extends IPlatformSpecificAdapterContribut
 
 export interface IDebugConfigurationProvider {
 	readonly type: string;
-	resolveDebugConfiguration?(folderUri: uri | undefined, debugConfiguration: IConfig): Promise<IConfig>;
+	resolveDebugConfiguration?(folderUri: uri | undefined, debugConfiguration: IConfig): Promise<IConfig | null | undefined>;
 	provideDebugConfigurations?(folderUri: uri | undefined): Promise<IConfig[]>;
 	debugAdapterExecutable?(folderUri: uri | undefined): Promise<IAdapterDescriptor>;		// TODO@AW legacy
 }
