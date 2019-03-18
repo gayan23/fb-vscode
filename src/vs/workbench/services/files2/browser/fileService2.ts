@@ -41,7 +41,7 @@ export class FileService2 extends Disposable implements IFileService {
 	get onDidChangeFileSystemProviderRegistrations(): Event<IFileSystemProviderRegistrationEvent> { return this._onDidChangeFileSystemProviderRegistrations.event; }
 
 	private readonly provider = new Map<string, IFileSystemProvider>();
-	private providerHandler: IProviderActivationHandler = (handler) => { console.warn('No provider activation handler registered yet.'); return Promise.resolve(); };
+	private providerHandler: IProviderActivationHandler = (handler) => { console.warn(`No provider activation handler registered yet for scheme ${handler}.`); return Promise.resolve(); };
 
 	registerProvider(scheme: string, provider: IFileSystemProvider): IDisposable {
 		if (this.provider.has(scheme)) {
