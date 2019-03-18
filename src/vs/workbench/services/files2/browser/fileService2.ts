@@ -22,7 +22,6 @@ export class FileService2 extends Disposable implements IFileService {
 
 		this._register(service.onFileChanges(e => this._onFileChanges.fire(e)));
 		this._register(service.onAfterOperation(e => this._onAfterOperation.fire(e)));
-		this._register(service.onDidChangeFileSystemProviderRegistrations(e => this._onDidChangeFileSystemProviderRegistrations.fire(e)));
 	}
 
 	//#endregion
