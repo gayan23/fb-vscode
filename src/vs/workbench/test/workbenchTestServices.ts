@@ -906,6 +906,8 @@ export class TestFileService implements IFileService {
 		this._onAfterOperation = new Emitter<FileOperationEvent>();
 	}
 
+	public setActivationProviderHandler(handler: () => Promise<void>): void { }
+
 	public setContent(content: string): void {
 		this.content = content;
 	}

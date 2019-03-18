@@ -3,12 +3,13 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Disposable, IDisposable } from 'vs/base/common/lifecycle';
+import { Disposable, IDisposable, toDisposable, combinedDisposable } from 'vs/base/common/lifecycle';
 import { IFileService, IResolveFileOptions, IResourceEncodings, FileChangesEvent, FileOperationEvent, IFileSystemProviderRegistrationEvent, IFileSystemProvider, IFileStat, IResolveFileResult, IResolveContentOptions, IContent, IStreamContent, ITextSnapshot, IUpdateContentOptions, ICreateFileOptions } from 'vs/platform/files/common/files';
 import { URI } from 'vs/base/common/uri';
 import { Event, Emitter } from 'vs/base/common/event';
 import { ServiceIdentifier } from 'vs/platform/instantiation/common/instantiation';
 import { registerSingleton } from 'vs/platform/instantiation/common/extensions';
+import { Schemas } from 'vs/base/common/network';
 
 export class FileService2 extends Disposable implements IFileService {
 
@@ -40,16 +41,52 @@ export class FileService2 extends Disposable implements IFileService {
 	private _onDidChangeFileSystemProviderRegistrations: Emitter<IFileSystemProviderRegistrationEvent> = this._register(new Emitter<IFileSystemProviderRegistrationEvent>());
 	get onDidChangeFileSystemProviderRegistrations(): Event<IFileSystemProviderRegistrationEvent> { return this._onDidChangeFileSystemProviderRegistrations.event; }
 
+	private readonly provider = new Map<string, IFileSystemProvider>();
+	private providerHandler: () => Promise<void>;
+
 	registerProvider(scheme: string, provider: IFileSystemProvider): IDisposable {
-		return this._impl.registerProvider(scheme, provider);
+		if (this.provider.has(scheme)) {
+			throw new Error('a provider for that scheme is already registered');
+		}
+
+		const legacyDisposal = this._impl.registerProvider(scheme, provider);
+
+		// Add provider with event
+		this.provider.set(scheme, provider);
+		this._onDidChangeFileSystemProviderRegistrations.fire({ added: true, scheme, provider });
+
+		// Forward change events from provider
+		const providerFileListener = provider.onDidChangeFile(changes => this._onFileChanges.fire(new FileChangesEvent(changes)));
+
+		return combinedDisposable([
+			toDisposable(() => {
+				this._onDidChangeFileSystemProviderRegistrations.fire({ added: false, scheme, provider });
+				this.provider.delete(scheme);
+
+				providerFileListener.dispose();
+			}),
+			legacyDisposal
+		]);
 	}
 
 	activateProvider(scheme: string): Promise<void> {
-		return this._impl.activateProvider(scheme);
+		if (this.provider.has(scheme)) {
+			return Promise.resolve(); // provider is already here! TODO@ben should we still activate by event but not wait for it?
+		}
+
+		return this.providerHandler(scheme);
+
+		// return this._extensionService.activateByEvent('onFileSystem:' + scheme); TODO@ben handle this outside
+
+		return Promise.resolve();
+	}
+
+	setActivationProviderHandler(handler: () => Promise<void>): void {
+		this.providerHandler = handler;
 	}
 
 	canHandleResource(resource: URI): boolean {
-		return this._impl.canHandleResource(resource);
+		return this.provider.has(resource.scheme) || resource.scheme === Schemas.file; // TODO@ben proper file:// registration
 	}
 
 	//#endregion

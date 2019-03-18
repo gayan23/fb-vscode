@@ -696,6 +696,8 @@ export class SimpleRemoteFileService implements IFileService {
 	readonly onAfterOperation = Event.None;
 	readonly onDidChangeFileSystemProviderRegistrations = Event.None;
 
+	setActivationProviderHandler(handler: () => Promise<void>): void { }
+
 	resolveFile(resource: URI, options?: IResolveFileOptions): Promise<IFileStat> {
 		// @ts-ignore
 		return Promise.resolve(fileMap.get(resource));
